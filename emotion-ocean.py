@@ -1,9 +1,8 @@
-import os, argparse, logging
-import string, re, json
+import os, argparse, logging, string
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from tqdm.auto import tqdm
+
+from analyzer import Analyzer
 
 PUNC_WHITESPACE = str.maketrans(string.punctuation,
                                 ' ' * len(string.punctuation))
@@ -28,7 +27,7 @@ def read_dataset(path):
         names = [os.path.join(path, x) for x in os.listdir(path)]
         data = pd.concat([pd.read_csv(x) for x in names])[['date', 'message']]
     else:
-        raise OSError('Error di file datanya')
+        raise NotImplementedError('Error di file datanya')
 
     # Preprocess Dataset
     data['date'] = pd.to_datetime(data['date'])
@@ -42,9 +41,10 @@ def read_dataset(path):
     print()
 
     logging.info('Dataset Information')
-    print(f'Rentang Tanggal : {data.date.min()} - {data.date.max()}')
-    print(f'N data          : {data.shape[0]}')
-    print(f'N NaN           : {nan_desc.values.sum()}')
+    print(f'   *  Rentang Tanggal : {data.date.min().strftime("%d %b %Y")} - ' +
+          f'{data.date.max().strftime("%d %b %Y")}')
+    print(f'   *  N data          : {data.shape[0]}')
+    print(f'   *  N NaN           : {nan_desc.values.sum()}')
     print()
 
     return data
@@ -64,6 +64,10 @@ if __name__ == '__main__':
         "--analysis",
         help="Tipe analisis yang digunakan 'emotion' atau 'ocean'",
         type=str)
+    parser.add_argument("-e",
+                        "--export",
+                        help="Export hasil ke csv",
+                        action="store_true")
 
     args = parser.parse_args()
     logging.basicConfig(format='[ %(levelname)s ] %(message)s',
@@ -72,5 +76,8 @@ if __name__ == '__main__':
     data = read_dataset(args.path)
 
     if args.analysis:
-        with open('keywords.json') as reader:
-            keywords = json.load(reader)
+        logging.info(f'Running {args.analysis} analisis'.title())
+        analyzer = Analyzer(data, args.analysis)
+        analyzer.analyse(args.export)
+
+    logging.info('Done !')
