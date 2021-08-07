@@ -8,6 +8,12 @@ Script buat automatisasi tugas - tugas PKL di Ivosight
 git clone https://github.com/Hyuto/pkl-ivo.git
 ```
 
+**Install dependencies**
+
+```bash
+pip install -r requirements.txt
+```
+
 ## Emotion & OCEAN Analysis
 
 Script : `emotion-ocean.py`

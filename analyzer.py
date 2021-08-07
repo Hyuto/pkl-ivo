@@ -1,8 +1,8 @@
 import os, re, json, logging
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from tqdm.auto import tqdm
+from utils import check_dir
 
 
 class Analyzer:
@@ -11,22 +11,6 @@ class Analyzer:
         with open('keywords.json') as reader:
             self.keywords = json.load(reader)[analisis]
         self.data = data
-
-    def _check_dir(self, filename):
-        if not os.path.isdir('./output'):
-            os.mkdir('./output')
-
-        if os.path.isfile(f'./output/{filename}'):
-            logging.warning('Terdapat file lama!')
-            user = input('   *  Overwrite? [y/n] ')
-            print()
-            if user.lower() == 'y':
-                return True
-            elif user.lower() == 'n':
-                return False
-            else:
-                raise NotImplementedError('Input error!')
-        return True
 
     def analyse(self, export):
         result = {}
@@ -46,6 +30,8 @@ class Analyzer:
         print()
 
         if export:
+            logging.info(f'Exporting data')
+
             df = pd.DataFrame({
                 self.analisis:
                 result.keys(),
@@ -57,6 +43,6 @@ class Analyzer:
             filename = f'{self.analisis.upper()}_{self.data.date.min().strftime("%d %b %Y")} - ' + \
                        f'{self.data.date.max().strftime("%d %b %Y")}.csv'
 
-            if self._check_dir(filename):
-                df.to_csv(f'./output/{filename}', index=False)
-                logging.info(f'Exported to "output/{filename}"')
+            status, path = check_dir(filename)
+            if status:
+                df.to_csv(path, index=False)
