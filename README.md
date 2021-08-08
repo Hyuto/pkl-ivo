@@ -61,3 +61,44 @@ python emotion-ocean.py -p ./data -a emotion --export
 ```
 
 File `csv` akan di export kedalam folder *output*
+
+## Forecasting
+
+Script : `forecast.py`
+
+**Cara Penggunaan**
+
+1. Generate `forecasting-dataset`<br>
+   Generate dataset untuk forecasting
+
+   ```bash
+   python forecast.py -p [PATH-KE-DATA | PATH-KE-FOLDER] --generate
+   ```
+
+   Contoh:
+
+   ```bash
+   python forecast -p ./data --generate
+   ```
+
+   Data nantinya akan tersimpan di folder `output`
+2. Forecast<br>
+   Melakukan forecasting terhadap data yang sudah di `generate` sebelumnya
+
+   ```bash
+   python forecast.py -p [PATH-KE-FORECAST-DATA] -a
+   ```
+
+   Contoh:
+
+   ```bash
+   python forecast.py -p './output/Forecast Data_01 Jan 2021 - 31 Jan 2021.csv' -a
+   ```
+
+**Magic `config.json`**
+
+Atur segalanya pada file `config.json`
+
+**Tune AutoArima**
+
+Dokumentasi: [pmdarima.arima.AutoARIMA](https://alkaline-ml.com/pmdarima/modules/generated/pmdarima.arima.AutoARIMA.html#pmdarima.arima.AutoARIMA)

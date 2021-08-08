@@ -19,3 +19,21 @@ def check_dir(filename):
         else:
             raise NotImplementedError('Input error!')
     return (True, os.path.join(OUTPUT, filename))
+
+
+def get_project_dir(name):
+    if not os.path.isdir(OUTPUT):
+        os.mkdir(OUTPUT)
+
+    dir_name = os.path.join(OUTPUT, name)
+    if not os.path.isdir(dir_name):
+        os.mkdir(dir_name)
+        return dir_name
+    else:
+        i = 1
+        while True:
+            temp_name = dir_name + f'_{i}'
+            if not os.path.isdir(temp_name):
+                os.mkdir(temp_name)
+                return temp_name
+            i += 1

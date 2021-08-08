@@ -1,0 +1,33 @@
+{
+  "data": {
+    "emotion-ocean": {},
+
+    "forecast": {
+      "groupby": "day",
+      "handle-missing": "mean"
+    }
+  },
+
+  "forecast": {
+    "n-test": 10,
+    "n-predict": 10,
+
+    "ARIMA": {
+      "start_p": 1,
+      "start_q": 1,
+      "start_P": 1,
+      "start_Q": 1,
+      "max_p": 5,
+      "max_q": 5,
+      "max_P": 5,
+      "max_Q": 5,
+      "max_D": 10,
+      "seasonal": false,
+      "stepwise": true,
+      "suppress_warnings": true,
+      "error_action": "ignore",
+      "trace": false,
+      "random_state": 2021
+    }
+  }
+}

@@ -1,9 +1,14 @@
-import os, json, logging
+import os, json
+import logging, string
 import numpy as np
 import pandas as pd
 from datetime import datetime
 from tqdm.auto import tqdm
 from utils import check_dir
+
+PUNC_WHITESPACE = str.maketrans(string.punctuation,
+                                ' ' * len(string.punctuation))
+DIGITS_WHITESPACE = str.maketrans(string.digits, ' ' * len(string.digits))
 
 
 class Data:
@@ -42,6 +47,8 @@ class Data:
                 f'      ~  {x[0]} : {x[1]}' for x in nan_desc.items()
                 if x[0] != 'datetime'
             ]))
+        elif type(nan_desc) == int:
+            print(f'   *  N NaN           : {nan_desc.values.sum()}')
         print()
 
     def generate_dataset(self):
@@ -147,5 +154,30 @@ class Data:
         data.sort_values(by=['datetime'], inplace=True)
 
         self._get_info(data)
+
+        return data
+
+    @staticmethod
+    def preprocess_text_data(s):
+        s = s.lower()
+        s = s.translate(DIGITS_WHITESPACE)
+        s = s.translate(PUNC_WHITESPACE)
+        s = ' '.join(s.split())
+        return s
+
+    def read_ocean_emotion_data(self):
+        # Read dataset
+        data = self._read_dataset()[['date', 'message']]
+
+        # Preprocess Dataset
+        data['date'] = pd.to_datetime(data['date'])
+        data.sort_values(by=['date'], inplace=True)
+        data.rename(columns={'date': 'datetime'}, inplace=True)
+        nan_desc = data.isna().sum()
+        data.dropna(inplace=True)
+        data['message'] = data['message'].apply(
+            lambda x: self.preprocess_text_data(x))
+
+        self._get_info(data, nan_desc)
 
         return data

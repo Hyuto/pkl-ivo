@@ -1,4 +1,0 @@
-{
-  "groupby": "hour",
-  "handle-missing": "mean"
-}

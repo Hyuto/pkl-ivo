@@ -40,8 +40,8 @@ class Analyzer:
                 'persentase': [x / total * 100 for x in result.values()]
             })
 
-            filename = f'{self.analisis.upper()}_{self.data.date.min().strftime("%d %b %Y")} - ' + \
-                       f'{self.data.date.max().strftime("%d %b %Y")}.csv'
+            filename = f'{self.analisis.upper()}_{self.data.datetime.min().strftime("%d %b %Y")} - ' + \
+                       f'{self.data.datetime.max().strftime("%d %b %Y")}.csv'
 
             status, path = check_dir(filename)
             if status:
