@@ -95,7 +95,7 @@ Script : `forecast.py`
    python forecast.py -p './output/Forecast Data_01 Jan 2021 - 31 Jan 2021.csv' -a
    ```
 
-**Magic `config.json`**
+## Magic `config.json`
 
 Atur segalanya pada file `config.json`
 

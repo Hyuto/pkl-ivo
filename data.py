@@ -83,8 +83,10 @@ class Data:
         # Create new dataframe with forecast format
         data = pd.DataFrame({
             'datetime':
-            pd.date_range(data['datetime'].min(),
-                          data['datetime'].max(),
+            pd.date_range(datetime.strptime(self.config['period']['start'],
+                                            '%d/%m/%Y'),
+                          datetime.strptime(self.config['period']['stop'],
+                                            '%d/%m/%Y'),
                           freq=freq)
         })
 
