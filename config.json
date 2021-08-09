@@ -1,6 +1,11 @@
 {
   "data": {
-    "emotion-ocean": {},
+    "emotion-ocean": {
+      "period": {
+        "start": "1/01/2021",
+        "stop": "30/06/2021"
+      }
+    },
 
     "forecast": {
       "groupby": "day",

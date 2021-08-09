@@ -178,6 +178,11 @@ class Data:
         data.dropna(inplace=True)
         data["message"] = data["message"].apply(lambda x: self.preprocess_text_data(x))
 
+        data = data.loc[
+            (data["datetime"] >= datetime.strptime(self.config["period"]["start"], "%d/%m/%Y"))
+            & (data["datetime"] <= datetime.strptime(self.config["period"]["stop"], "%d/%m/%Y"))
+        ]
+
         self._get_info(data, nan_desc)
 
         return data
