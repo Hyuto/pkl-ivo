@@ -17,14 +17,9 @@ from pmdarima import model_selection
 from sklearn.metrics import *
 
 
-def forecast(data, config, interval):
-    name = (
-        f'Forecast_{data.datetime.min().strftime("%d %b %Y")} - '
-        + f'{data.datetime.max().strftime("%d %b %Y")}'
-    )
-    project_dir = get_project_dir(name)
-
+def forecast(data, config, interval, project_dir):
     sentiments = ["negative", "neutral", "positive"]
+    log_score = {}
     for sentiment in sentiments:
         logging.info(f"Forecasting {sentiment} (ARIMA)")
         train, test = model_selection.train_test_split(
@@ -39,8 +34,11 @@ def forecast(data, config, interval):
         preds, conf_int = model.predict(n_periods=test.shape[0], return_conf_int=True)
 
         logging.info("Performance")
-        print(f"   *  Test RMSE : {round(np.sqrt(mean_squared_error(test, preds)), 2)}")
-        print(f"   *  Test MAPE : {round(mean_absolute_percentage_error(test, preds) * 100, 2)}%")
+        rmse = round(np.sqrt(mean_squared_error(test, preds)), 2)
+        mape = round(mean_absolute_percentage_error(test, preds) * 100, 2)
+        log_score[sentiment] = {"rmse": rmse, "mape": mape}
+        print(f"   *  Test RMSE : {rmse}")
+        print(f"   *  Test MAPE : {mape}%")
         print()
 
         model.update(test)
@@ -67,6 +65,8 @@ def forecast(data, config, interval):
         plt.xlabel("Date")
         plt.savefig(os.path.join(project_dir, f"ARIMA-{sentiment}.png"), bbox_inches="tight")
 
+    return log_score
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Script untuk melakukan forecasting")
@@ -81,7 +81,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "-a", "--analyze", help="Melakukan forecasting terhadap data", action="store_true"
     )
-    parser.add_argument("-e", "--export", help="Export hasil ke csv", action="store_true")
+    parser.add_argument("-pr", "--prophet", help="Using Prophet", action="store_true")
+    parser.add_argument("-e", "--export", help="Export performance to csv", action="store_true")
 
     args = parser.parse_args()
     logging.basicConfig(format="[ %(levelname)s ] %(message)s", level=logging.INFO)
@@ -97,6 +98,46 @@ if __name__ == "__main__":
 
     if args.analyze:
         data = datagen.read_forecast_data()
-        forecast(data, config["forecast"], config["data"]["forecast"]["groupby"])
+        name = (
+            f'Forecast_{data.datetime.min().strftime("%d %b %Y")} - '
+            + f'{data.datetime.max().strftime("%d %b %Y")}'
+        )
+        project_dir = get_project_dir(name)
+
+        # for export purpose
+        log = {"sentiment": [], "rmse": [], "mape": [], "model": []}
+
+        log_arima = forecast(
+            data, config["forecast"], config["data"]["forecast"]["groupby"], project_dir
+        )
+        for sentiment in log_arima:
+            log["sentiment"].append(sentiment)
+            log["rmse"].append(log_arima[sentiment]["rmse"])
+            log["mape"].append(log_arima[sentiment]["mape"])
+            log["model"].append("arima")
+
+        if args.prophet:
+            # Testing
+            import platform
+
+            assert (
+                config["data"]["forecast"]["groupby"] == "day"
+            ), "groupby harus 'day' untuk prophet"
+            assert platform.system().lower() == "linux", "Prophet hanya support di linux"
+
+            from Prophet import ProphetModel
+
+            model = ProphetModel(data, config["forecast"])
+            log_prophet = model.analyze(project_dir)
+
+            for sentiment in log_prophet:
+                log["sentiment"].append(sentiment)
+                log["rmse"].append(log_prophet[sentiment]["rmse"])
+                log["mape"].append(log_prophet[sentiment]["mape"])
+                log["model"].append("prophet")
+
+        if args.export:
+            logging.info("Exporting performace models to readable csv")
+            pd.DataFrame(log).to_csv(os.path.join(project_dir, "performance.csv"), index=False)
 
     logging.info("Done !")

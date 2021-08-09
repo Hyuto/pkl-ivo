@@ -95,6 +95,36 @@ Script : `forecast.py`
    python forecast.py -p './output/Forecast Data_01 Jan 2021 - 31 Jan 2021.csv' -a
    ```
 
+**Exporting Performance to `csv`**
+
+Gunakan `--export` sebagai tambahan argumen `-a` untuk mengeksport detail performance model menjadi
+`csv`
+
+Contoh :
+
+```
+python forecast.py -p './output/Forecast Data_01 Jan 2021 - 31 Jan 2021.csv' -a --export
+```
+
+## Prophet [Hanya untuk Linux]
+
+Forecast menggunakan `Prophet`.
+
+Supported OS: **Linux**
+
+**Installation**
+
+```bash
+pip install pystan==2.19.1.1
+pip install prophet
+```
+
+**Running Script**
+
+```
+python forecast.py -p [PATH-KE-FORECAST-DATA] -a --prophet
+```
+
 ## Magic `config.json`
 
 Atur segalanya pada file `config.json`
