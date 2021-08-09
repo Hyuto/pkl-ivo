@@ -62,7 +62,7 @@ def forecast(data, config, interval):
         plt.plot(data["datetime"].values, train.tolist() + test.tolist(), alpha=0.75)
         plt.plot(preds_axis, preds, alpha=0.75)
         plt.fill_between(preds_axis, conf_int[:, 0], conf_int[:, 1], alpha=0.1, color="g")
-        plt.title(f"{'Negative'} forecasts", fontsize=20)
+        plt.title(f"{sentiment.title()} forecasts", fontsize=20)
         plt.xticks(rotation=90)
         plt.xlabel("Date")
         plt.savefig(os.path.join(project_dir, f"ARIMA-{sentiment}.png"), bbox_inches="tight")
