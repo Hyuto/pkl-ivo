@@ -2,7 +2,7 @@ import os, json
 import logging, string
 import numpy as np
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 from tqdm.auto import tqdm
 from utils import check_dir
 
@@ -67,14 +67,8 @@ class Data:
         data.dropna(inplace=True)
 
         # Grouping by datetime
-        if self.config["groupby"] == "hour":
-            grouping = [data["datetime"].dt.date, data["datetime"].dt.hour, "sentiment"]
-            freq = "H"
-        elif self.config["groupby"] == "day":
-            grouping = [data["datetime"].dt.date, "sentiment"]
-            freq = "D"
-        else:
-            raise NotImplementedError("Config Error ! [groupby]")
+        grouping = [data["datetime"].dt.date, data["datetime"].dt.hour, "sentiment"]
+        freq = "H"
 
         sentiments = ["negative", "neutral", "positive"]
         data_baru = data.groupby(grouping).count()
@@ -94,37 +88,37 @@ class Data:
             data_sentiment = data_baru.loc[
                 [True if sentiment in x else False for x in data_baru.index],
             ]
-            if self.config["groupby"] == "hour":
-                date = [
-                    datetime(year=x[0].year, month=x[0].month, day=x[0].day, hour=x[1])
-                    for x in data_sentiment.index
-                ]
-            elif self.config["groupby"] == "day":
-                date = [
-                    datetime(year=x[0].year, month=x[0].month, day=x[0].day)
-                    for x in data_sentiment.index
-                ]
-            else:
-                raise NotImplementedError("Config Error ! [groupby]")
+            date = [
+                datetime(year=x[0].year, month=x[0].month, day=x[0].day, hour=x[1])
+                for x in data_sentiment.index
+            ]
             temp = pd.DataFrame(
                 {"datetime": date, sentiment: data_sentiment.to_numpy().flatten().astype("float32")}
             )
             data = data.merge(temp, on="datetime", how="left")
         print()
 
+        # Grouping by datetime
+        if self.config["groupby"] == "hour":
+            pass
+        elif self.config["groupby"] == "day":
+            data = data.resample("D", on="datetime").sum()
+        elif self.config["groupby"] == "week":
+            day = data["datetime"][0] + timedelta(days=6)
+            data = data.resample(f"W-{day.strftime('%a')}", on="datetime").sum()
+        else:
+            raise NotImplementedError("Config Error ! [groupby]")
+
         # Handle missing data
         nan_desc = data.isna().sum()
         for sentiment in sentiments:
-            if self.config["handle-missing"] == "mean":
-                fill = data[sentiment].mean()
-            elif self.config["handle-missing"] == "median":
-                fill = data[sentiment].median()
-            elif type(self.config["handle-missing"]) in [int, float]:
-                fill = self.config["handle-missing"]
-            else:
-                raise NotImplementedError("Config Error ! [handle-missing]")
+            data[sentiment] = data[sentiment].fillna(0)
 
-            data[sentiment] = data[sentiment].fillna(fill)
+        data.reset_index(inplace=True)
+        data = data[["datetime", "negative", "neutral", "positive"]]
+        data = data.loc[
+            data["datetime"] <= datetime.strptime(self.config["period"]["stop"], "%d/%m/%Y")
+        ]
 
         self._get_info(data, nan_desc)  # print info
 

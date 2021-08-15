@@ -33,8 +33,9 @@ class ProphetModel:
 
         return rmse, mape
 
-    def analyze(self, project_dir):
+    def analyze(self, interval, project_dir):
         logging.info("Using Prophet")
+        period = "D" if interval == "day" else "W"
         log_score = {}
         for sentiment in ["negative", "neutral", "positive"]:
             logging.info(f"Forecasting {sentiment} (Prophet)")
@@ -43,7 +44,7 @@ class ProphetModel:
 
             model = Prophet(**self.config["prophet"]).fit(temp_data[: -self.config["n-test"]])
 
-            future = model.make_future_dataframe(periods=self.config["n-test"])
+            future = model.make_future_dataframe(periods=self.config["n-test"], freq=period)
             forecast = model.predict(future)
 
             rmse, mape = self.get_performance(
@@ -52,7 +53,7 @@ class ProphetModel:
             log_score[sentiment] = {"rmse": rmse, "mape": mape}
 
             self.model = Prophet().fit(temp_data)
-            future = self.model.make_future_dataframe(periods=30)
+            future = self.model.make_future_dataframe(periods=self.config["n-predict"], freq=period)
             forecast = self.model.predict(future)
             print()
 

@@ -48,6 +48,8 @@ def forecast(data, config, interval, project_dir):
             i = "D"
         elif interval == "hour":
             i = "h"
+        elif interval == "week":
+            i = "W"
         else:
             raise NotImplementedError("Config Error ! [groupby]")
 
@@ -122,13 +124,14 @@ if __name__ == "__main__":
 
             assert (
                 config["data"]["forecast"]["groupby"] == "day"
-            ), "groupby harus 'day' untuk prophet"
+                or config["data"]["forecast"]["groupby"] == "week"
+            ), "groupby harus 'day' atau 'week' untuk prophet"
             assert platform.system().lower() == "linux", "Prophet hanya support di linux"
 
             from Prophet import ProphetModel
 
             model = ProphetModel(data, config["forecast"])
-            log_prophet = model.analyze(project_dir)
+            log_prophet = model.analyze(config["data"]["forecast"]["groupby"], project_dir)
 
             for sentiment in log_prophet:
                 log["sentiment"].append(sentiment)
