@@ -57,17 +57,19 @@ class ProphetModel:
             forecast = self.model.predict(future)
             print()
 
+            last = [temp_data["y"].values[-1]]
             plt.figure(figsize=(10, 5))
             plt.plot(temp_data["ds"].values, temp_data["y"].values, alpha=0.75)
+            plt.scatter(temp_data["ds"].values, temp_data["y"].values)
             plt.plot(
-                forecast["ds"].values[-self.config["n-predict"] :],
-                forecast["yhat"].values[-self.config["n-predict"] :],
+                forecast["ds"].values[-self.config["n-predict"] - 1 :],
+                last + forecast["yhat"].values[-self.config["n-predict"] :].tolist(),
                 alpha=0.75,
             )
             plt.fill_between(
-                forecast["ds"].values[-self.config["n-predict"] :],
-                forecast["yhat_lower"].values[-self.config["n-predict"] :],
-                forecast["yhat_upper"].values[-self.config["n-predict"] :],
+                forecast["ds"].values[-self.config["n-predict"] - 1 :],
+                last + forecast["yhat_lower"].values[-self.config["n-predict"] :].tolist(),
+                last + forecast["yhat_upper"].values[-self.config["n-predict"] :].tolist(),
                 alpha=0.1,
                 color="g",
             )

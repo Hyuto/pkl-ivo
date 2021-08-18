@@ -55,13 +55,21 @@ def forecast(data, config, interval, project_dir):
 
         preds_axis = [
             data["datetime"].values[-1] + np.timedelta64(x, i)
-            for x in range(1, config["n-predict"] + 1)
+            for x in range(0, config["n-predict"] + 1)
         ]
 
+        last_test = [test.tolist()[-1]]
         plt.figure(figsize=(10, 5))
         plt.plot(data["datetime"].values, train.tolist() + test.tolist(), alpha=0.75)
-        plt.plot(preds_axis, preds, alpha=0.75)
-        plt.fill_between(preds_axis, conf_int[:, 0], conf_int[:, 1], alpha=0.1, color="g")
+        plt.scatter(data["datetime"].values, train.tolist() + test.tolist())
+        plt.plot(preds_axis, last_test + preds.tolist(), alpha=0.75)
+        plt.fill_between(
+            preds_axis,
+            last_test + conf_int[:, 0].tolist(),
+            last_test + conf_int[:, 1].tolist(),
+            alpha=0.1,
+            color="g",
+        )
         plt.title(f"{sentiment.title()} forecasts", fontsize=20)
         plt.xticks(rotation=90)
         plt.xlabel("Date")
