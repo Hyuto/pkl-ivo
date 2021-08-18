@@ -30,7 +30,7 @@ class Analyzer:
                 count = [len(re.findall(patterns, x)) for x in temp_data.message.values]
                 temp_result[key] = sum(count)
             result[datetime.strptime(str(range_time.month[i]), "%m").strftime("%B")] = temp_result
-            data = data.loc[data["datetime"] <= x]
+            data = data.loc[data["datetime"] > x]
         print()
 
         logging.info("Hasil")
