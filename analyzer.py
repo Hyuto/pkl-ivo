@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from tqdm.auto import tqdm
 from utils import check_dir
+from datetime import datetime
 
 
 class Analyzer:
@@ -12,31 +13,49 @@ class Analyzer:
             self.keywords = json.load(reader)[analisis]
         self.data = data
 
-    def analyse(self, export):
+    def analyse(self, export, config):
         result = {}
-        for key, value in tqdm(self.keywords.items()):
-            patterns = [fr"\b{x}\b" for x in value]
-            patterns = fr'{"|".join(patterns)}'
-            count = [len(re.findall(patterns, x)) for x in self.data.message.values]
-            result[key] = sum(count)
+        range_time = pd.date_range(
+            datetime.strptime(config["period"]["start"], "%d/%m/%Y"),
+            datetime.strptime(config["period"]["stop"], "%d/%m/%Y"),
+            freq="M",
+        )
+        data = self.data.copy()
+        for i, x in enumerate(tqdm(range_time.values)):
+            temp_data = data.loc[data["datetime"] <= x]
+            temp_result = {}
+            for key, value in self.keywords.items():
+                patterns = [fr"\b{x}\b" for x in value]
+                patterns = fr'{"|".join(patterns)}'
+                count = [len(re.findall(patterns, x)) for x in temp_data.message.values]
+                temp_result[key] = sum(count)
+            result[datetime.strptime(str(range_time.month[i]), "%m").strftime("%B")] = temp_result
+            data = data.loc[data["datetime"] <= x]
         print()
 
         logging.info("Hasil")
-        total = sum(result.values())
-        for key, value in result.items():
-            print(f"   *  {key} : {value} ({round(value / total * 100, 2)}%)")
+        for m in result:
+            print(m)
+            total = sum(result[m].values())
+            for key, value in result[m].items():
+                print(f"   *  {key} : {value} ({round(value / total * 100, 2)}%)")
+            print()
         print()
 
         if export:
             logging.info(f"Exporting data")
+            export_data = {"bulan": [], self.analisis: [], "jumlah": [], "persentase": []}
 
-            df = pd.DataFrame(
-                {
-                    self.analisis: result.keys(),
-                    "jumlah": result.values(),
-                    "persentase": [x / total * 100 for x in result.values()],
-                }
-            )
+            for m in result:
+                export_data["bulan"] += [m for i in range(len(result[m]))]
+                total = sum(result[m].values())
+                export_data[self.analisis] += list(result[m].keys())
+                export_data["jumlah"] += list(result[m].values())
+                export_data["persentase"] += [
+                    round(value / total * 100, 4) for value in result[m].values()
+                ]
+
+            df = pd.DataFrame(export_data)
 
             filename = (
                 f'{self.analisis.upper()}_{self.data.datetime.min().strftime("%d %b %Y")} - '

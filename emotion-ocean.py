@@ -31,6 +31,6 @@ if __name__ == "__main__":
     if args.analysis:
         logging.info(f"Running {args.analysis} analisis".title())
         analyzer = Analyzer(data, args.analysis)
-        analyzer.analyse(args.export)
+        analyzer.analyse(args.export, config)
 
     logging.info("Done !")
