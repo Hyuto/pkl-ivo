@@ -37,7 +37,7 @@ class ProphetModel:
         logging.info("Using Prophet")
         period = "D" if interval == "day" else "W"
         log_score = {}
-        for sentiment in ["negative", "neutral", "positive"]:
+        for sentiment in ["negative", "neutral", "positive", "total"]:
             logging.info(f"Forecasting {sentiment} (Prophet)")
             temp_data = self.data[["datetime", sentiment]].copy()
             temp_data.rename(columns={"datetime": "ds", sentiment: "y"}, inplace=True)
@@ -60,7 +60,6 @@ class ProphetModel:
             last = [temp_data["y"].values[-1]]
             plt.figure(figsize=(10, 5))
             plt.plot(temp_data["ds"].values, temp_data["y"].values, alpha=0.75)
-            plt.scatter(temp_data["ds"].values, temp_data["y"].values)
             plt.plot(
                 forecast["ds"].values[-self.config["n-predict"] - 1 :],
                 last + forecast["yhat"].values[-self.config["n-predict"] :].tolist(),

@@ -8,18 +8,18 @@
     },
 
     "forecast": {
-      "groupby": "week",
+      "groupby": "day",
 
       "period": {
-        "start": "1/01/2021",
+        "start": "01/01/2021",
         "stop": "31/07/2021"
       }
     }
   },
 
   "forecast": {
-    "n-test": 3,
-    "n-predict": 4,
+    "n-test": 15,
+    "n-predict": 30,
 
     "ARIMA": {
       "start_p": 1,

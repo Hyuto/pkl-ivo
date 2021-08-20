@@ -10,7 +10,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 from data import Data
-from utils import get_project_dir
+from utils import get_project_dir, check_dir
 
 import pmdarima as pm
 from pmdarima import model_selection
@@ -18,7 +18,7 @@ from sklearn.metrics import *
 
 
 def forecast(data, config, interval, project_dir):
-    sentiments = ["negative", "neutral", "positive"]
+    sentiments = ["negative", "neutral", "positive", "total"]
     log_score = {}
     for sentiment in sentiments:
         logging.info(f"Forecasting {sentiment} (ARIMA)")
@@ -61,7 +61,6 @@ def forecast(data, config, interval, project_dir):
         last_test = [test.tolist()[-1]]
         plt.figure(figsize=(10, 5))
         plt.plot(data["datetime"].values, train.tolist() + test.tolist(), alpha=0.75)
-        plt.scatter(data["datetime"].values, train.tolist() + test.tolist())
         plt.plot(preds_axis, last_test + preds.tolist(), alpha=0.75)
         plt.fill_between(
             preds_axis,
@@ -88,6 +87,7 @@ if __name__ == "__main__":
         required=True,
     )
     parser.add_argument("-g", "--generate", help="Generate forecasting data", action="store_true")
+    parser.add_argument("-f", "--filter", help="Filter data with keywords", type=str)
     parser.add_argument(
         "-a", "--analyze", help="Melakukan forecasting terhadap data", action="store_true"
     )
@@ -104,7 +104,20 @@ if __name__ == "__main__":
     datagen = Data(args.path, config["data"]["forecast"])
 
     if args.generate:
-        data = datagen.generate_dataset()
+        if args.filter:
+            data = datagen.generate_dataset(args.filter)
+        else:
+            data = datagen.generate_dataset()
+
+        # Export
+        logging.info("Exporting data")
+        filename = (
+            f'Forecast Data_{data.datetime.min().strftime("%d %b %Y")} - '
+            + f'{data.datetime.max().strftime("%d %b %Y")}.csv'
+        )
+        status, path = check_dir(filename)
+        if status:
+            data.to_csv(path, index=False)
 
     if args.analyze:
         data = datagen.read_forecast_data()

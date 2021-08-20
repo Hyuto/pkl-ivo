@@ -1,10 +1,9 @@
-import os, json
+import os, json, re
 import logging, string
 import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
 from tqdm.auto import tqdm
-from utils import check_dir
 
 PUNC_WHITESPACE = str.maketrans(string.punctuation, " " * len(string.punctuation))
 DIGITS_WHITESPACE = str.maketrans(string.digits, " " * len(string.digits))
@@ -52,10 +51,27 @@ class Data:
             print(f"   *  N NaN           : {nan_desc.values.sum()}")
         print()
 
-    def generate_dataset(self):
+    @staticmethod
+    def find(x, patterns):
+        try:
+            return True if re.findall(patterns, x, flags=re.IGNORECASE) != [] else False
+        except:
+            return False
+
+    def generate_dataset(self, filters=None):
         """Generate forecasting dataset"""
         logging.info("Generating forecasting data")
         data = self._read_dataset()  # read csv
+
+        if filters:
+            logging.info("Filtering Data")
+            print("   *  Keywords :")
+            for i, x in enumerate(filters.split(",")):
+                print(f"      {i + 1}.  {x}")
+
+            patterns = [fr"\b{x}\b" for x in filters.split(",")]
+            patterns = fr'{"|".join(patterns)}'
+            data = data.loc[data["message"].apply(lambda x: self.find(x, patterns))]
 
         # Preprocess data
         columns = ["datetime", "sentiment"]
@@ -77,8 +93,12 @@ class Data:
         data = pd.DataFrame(
             {
                 "datetime": pd.date_range(
-                    datetime.strptime(self.config["period"]["start"], "%d/%m/%Y"),
-                    datetime.strptime(self.config["period"]["stop"], "%d/%m/%Y"),
+                    datetime.strptime(
+                        self.config["period"]["start"] + " 00:00:00", "%d/%m/%Y %H:%M:%S"
+                    ),
+                    datetime.strptime(
+                        self.config["period"]["stop"] + " 23:59:59", "%d/%m/%Y %H:%M:%S"
+                    ),
                     freq=freq,
                 )
             }
@@ -119,18 +139,9 @@ class Data:
         data = data.loc[
             data["datetime"] <= datetime.strptime(self.config["period"]["stop"], "%d/%m/%Y")
         ]
+        data["total"] = data[["negative", "neutral", "positive"]].sum(axis=1)
 
         self._get_info(data, nan_desc)  # print info
-
-        # Export
-        logging.info("Exporting data")
-        filename = (
-            f'Forecast Data_{data.datetime.min().strftime("%d %b %Y")} - '
-            + f'{data.datetime.max().strftime("%d %b %Y")}.csv'
-        )
-        status, path = check_dir(filename)
-        if status:
-            data.to_csv(path, index=False)
 
         return data
 
@@ -138,7 +149,7 @@ class Data:
         logging.info("Reading forecasting data")
         data = self._read_dataset()
 
-        data_format = ["datetime", "negative", "neutral", "positive"]
+        data_format = ["datetime", "negative", "neutral", "positive", "total"]
         if list(data.columns) != data_format:
             raise NotImplementedError(
                 "Format dataset salah! Tolong gunakan " + "data hasil generate dari script"
