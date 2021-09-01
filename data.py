@@ -173,7 +173,9 @@ class Data:
 
     def read_ocean_emotion_data(self):
         # Read dataset
-        data = self._read_dataset()[["date", "message"]]
+        data = self._read_dataset()[
+            ["date", "message", "url", "comments", "likes", "shares", "views"]
+        ]
 
         # Preprocess Dataset
         data["date"] = pd.to_datetime(data["date"])
