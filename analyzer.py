@@ -58,7 +58,10 @@ class Analyzer:
             print(m)
             total = sum(result[m].values())
             for key, value in result[m].items():
-                print(f"   *  {key} : {value} ({round(value / total * 100, 2)}%)")
+                if total > 0:
+                    print(f"   *  {key} : {value} ({round(value / total * 100, 2)}%)")
+                else:
+                    print(f"   *  {key} : {value} (0%)")
             print()
         print()
 
@@ -83,7 +86,8 @@ class Analyzer:
                 export_summary[self.analisis] += list(result[m].keys())
                 export_summary["jumlah"] += list(result[m].values())
                 export_summary["persentase"] += [
-                    round(value / total * 100, 4) for value in result[m].values()
+                    round(value / total * 100, 4) if total > 0 else 0
+                    for value in result[m].values()
                 ]
 
             for m in result_data:

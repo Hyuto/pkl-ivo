@@ -28,17 +28,14 @@ class Data:
         return data
 
     @staticmethod
-    def _get_info(data, nan_desc=None):
+    def _get_info(data, start, stop, nan_desc=None):
         """Print datasetn info"""
         logging.info("Sukses loading data!")
         print(data.head())
         print()
 
         logging.info("Dataset Information")
-        print(
-            f'   *  Rentang Tanggal : {data.datetime.min().strftime("%d %b %Y")} - '
-            + f'{data.datetime.max().strftime("%d %b %Y")}'
-        )
+        print(f"   *  Rentang Tanggal : {start} - {stop}")
         print(f"   *  N data          : {data.shape[0]}")
         if type(nan_desc) == pd.Series:
             print("   *  Data hilang")
@@ -141,7 +138,12 @@ class Data:
         ]
         data["total"] = data[["negative", "neutral", "positive"]].sum(axis=1)
 
-        self._get_info(data, nan_desc)  # print info
+        self._get_info(
+            data,
+            self.config["period"]["start"],
+            self.config["period"]["stop"],
+            nan_desc=nan_desc,
+        )  # print info
 
         return data
 
@@ -159,7 +161,7 @@ class Data:
         data["datetime"] = pd.to_datetime(data["datetime"])
         data.sort_values(by=["datetime"], inplace=True)
 
-        self._get_info(data)
+        self._get_info(data, self.config["period"]["start"], self.config["period"]["stop"])
 
         return data
 
@@ -190,6 +192,8 @@ class Data:
             & (data["datetime"] <= datetime.strptime(self.config["period"]["stop"], "%d/%m/%Y"))
         ]
 
-        self._get_info(data, nan_desc)
+        self._get_info(
+            data, self.config["period"]["start"], self.config["period"]["stop"], nan_desc=nan_desc
+        )
 
         return data
