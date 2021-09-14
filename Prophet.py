@@ -62,7 +62,10 @@ class ProphetModel:
             plt.plot(temp_data["ds"].values, temp_data["y"].values, alpha=0.75)
             plt.plot(
                 forecast["ds"].values[-self.config["n-predict"] - 1 :],
-                last + forecast["yhat"].values[-self.config["n-predict"] :].tolist(),
+                last
+                + [
+                    x if x >= 0 else 0 for x in forecast["yhat"].values[-self.config["n-predict"] :]
+                ],
                 alpha=0.75,
             )
             plt.fill_between(
