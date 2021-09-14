@@ -1,5 +1,7 @@
 import os, logging
 import matplotlib
+from datetime import datetime as dt
+import pandas as pd
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -76,7 +78,9 @@ class ProphetModel:
                 color="g",
             )
             plt.title(f"{sentiment.title()} forecasts", fontsize=20)
-            plt.xticks(rotation=90)
+            xlab = pd.date_range('2021/1/1','2021/10/1',freq='1MS')
+            plt.xticks(ticks = xlab,
+                       labels=list(map(lambda x: dt.strftime(x,'%d %b'), xlab)))
             plt.xlabel("Date")
             plt.savefig(os.path.join(project_dir, f"Prophet-{sentiment}.png"), bbox_inches="tight")
 
