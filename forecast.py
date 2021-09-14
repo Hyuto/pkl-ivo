@@ -70,7 +70,9 @@ def forecast(data, config, interval, project_dir):
             color="g",
         )
         plt.title(f"{sentiment.title()} forecasts", fontsize=20)
-        plt.xticks(rotation=90)
+        xlab = pd.date_range('2021/1/1','2021/10/31',freq='1M')
+        plt.xticks(ticks = xlab,
+                   labels=list(map(lambda x: dt.strftime(x,'%d %b'), xlab)))
         plt.xlabel("Date")
         plt.savefig(os.path.join(project_dir, f"ARIMA-{sentiment}.png"), bbox_inches="tight")
 
