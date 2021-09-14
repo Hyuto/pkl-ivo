@@ -1,6 +1,7 @@
 import os, logging
 import matplotlib
 from datetime import datetime as dt
+import pandas as pd
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
