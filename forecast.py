@@ -71,7 +71,7 @@ def forecast(data, config, interval, project_dir):
             color="g",
         )
         plt.title(f"{sentiment.title()} forecasts", fontsize=20)
-        xlab = pd.date_range('2021/1/1','2021/10/31',freq='1M')
+        xlab = pd.date_range('2021/1/1','2021/11/1',freq='1MS')
         plt.xticks(ticks = xlab,
                    labels=list(map(lambda x: dt.strftime(x,'%d %b'), xlab)))
         plt.xlabel("Date")
