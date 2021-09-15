@@ -21,7 +21,7 @@ class Data:
             data = pd.read_csv(self.path)
         elif os.path.isdir(self.path):
             logging.info(f"Loading dataset from directory {self.path}")
-            names = [os.path.join(self.path, x) for x in os.listdir(self.path)]
+            names = [os.path.join(self.path, x) for x in os.listdir(self.path) if 'stream' in x]
             data = pd.concat([pd.read_csv(x) for x in names])
         else:
             raise NotImplementedError("Error di file datanya")
