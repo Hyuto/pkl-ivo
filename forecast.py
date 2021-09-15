@@ -71,9 +71,8 @@ def forecast(data, config, interval, project_dir):
             color="g",
         )
         plt.title(f"{sentiment.title()} forecasts", fontsize=20)
-        xlab = pd.date_range('2021/1/1','2021/10/1',freq='1MS')
-        plt.xticks(ticks = xlab,
-                   labels=list(map(lambda x: dt.strftime(x,'%d %b'), xlab)))
+        xlab = pd.date_range("2021/1/1", "2021/10/1", freq="1MS")
+        plt.xticks(ticks=xlab, labels=list(map(lambda x: dt.strftime(x, "%d %b"), xlab)))
         plt.xlabel("Date")
         plt.savefig(os.path.join(project_dir, f"ARIMA-{sentiment}.png"), bbox_inches="tight")
 
@@ -88,6 +87,12 @@ if __name__ == "__main__":
         help="Path ke data atau direktori tempat penyimpanan data",
         type=str,
         required=True,
+    )
+    parser.add_argument(
+        "-s",
+        "--select",
+        help="Jika path adalah directory select digunakan untuk memilih nama file yang dicantumkan",
+        type=str,
     )
     parser.add_argument("-g", "--generate", help="Generate forecasting data", action="store_true")
     parser.add_argument("-f", "--filter", help="Filter data with keywords", type=str)
@@ -108,9 +113,9 @@ if __name__ == "__main__":
 
     if args.generate:
         if args.filter:
-            data = datagen.generate_dataset(args.filter)
+            data = datagen.generate_dataset(args.select, args.filter)
         else:
-            data = datagen.generate_dataset()
+            data = datagen.generate_dataset(args.select)
 
         # Export
         logging.info("Exporting data")

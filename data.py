@@ -14,14 +14,20 @@ class Data:
         self.path = path
         self.config = config
 
-    def _read_dataset(self):
+    def _read_dataset(self, select=None):
         """Reading CSV Data"""
         if os.path.isfile(self.path):
             logging.info(f"Loading dataset from file {self.path}")
             data = pd.read_csv(self.path)
         elif os.path.isdir(self.path):
             logging.info(f"Loading dataset from directory {self.path}")
-            names = [os.path.join(self.path, x) for x in os.listdir(self.path) if 'stream' in x]
+
+            if select:
+                logging.info(f"Selecting '{select}' from directory")
+                names = [os.path.join(self.path, x) for x in os.listdir(self.path) if select in x]
+            else:
+                names = [os.path.join(self.path, x) for x in os.listdir(self.path)]
+
             data = pd.concat([pd.read_csv(x) for x in names])
         else:
             raise NotImplementedError("Error di file datanya")
@@ -55,10 +61,10 @@ class Data:
         except:
             return False
 
-    def generate_dataset(self, filters=None):
+    def generate_dataset(self, select, filters=None):
         """Generate forecasting dataset"""
         logging.info("Generating forecasting data")
-        data = self._read_dataset()  # read csv
+        data = self._read_dataset(select)  # read csv
 
         if filters:
             logging.info("Filtering Data")
@@ -173,9 +179,9 @@ class Data:
         s = " ".join(s.split())
         return s
 
-    def read_ocean_emotion_data(self):
+    def read_ocean_emotion_data(self, select):
         # Read dataset
-        data = self._read_dataset()[
+        data = self._read_dataset(select)[
             ["date", "message", "url", "comments", "likes", "shares", "views"]
         ]
 

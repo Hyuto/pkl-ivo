@@ -14,6 +14,12 @@ if __name__ == "__main__":
         required=True,
     )
     parser.add_argument(
+        "-s",
+        "--select",
+        help="Jika path adalah directory select digunakan untuk memilih nama file yang dicantumkan",
+        type=str,
+    )
+    parser.add_argument(
         "-a", "--analysis", help="Tipe analisis yang digunakan 'emotion' atau 'ocean'", type=str
     )
     parser.add_argument("-e", "--export", help="Export hasil ke csv", action="store_true")
@@ -26,7 +32,7 @@ if __name__ == "__main__":
         config = json.load(reader)["data"]["emotion-ocean"]
 
     datagen = Data(args.path, config)
-    data = datagen.read_ocean_emotion_data()
+    data = datagen.read_ocean_emotion_data(args.select)
 
     if args.analysis:
         logging.info(f"Running {args.analysis} analisis".title())
